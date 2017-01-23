@@ -7,7 +7,6 @@ from bs4 import BeautifulSoup
 
 import render
 
-
 def fetch_page(params):
 
     uuid = params["uuid"]
@@ -48,12 +47,15 @@ def fetch_page(params):
         else:
             html = response.read()
             if('gbk' in html):
-                html = html.decode('gbk')
+                try:
+                    html = html.decode('gbk')
+                except:
+                    pass
 
         # print html
 
-        soup = BeautifulSoup(html)
         try:
+            soup = BeautifulSoup(html)
             title = soup.title.string
         except Exception:
             title = ""
@@ -86,7 +88,5 @@ def fetch_page(params):
             'httpcontenttype':httpcontenttype,
             'html':html,
         }
-
-
 
     return result
