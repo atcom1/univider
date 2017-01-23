@@ -17,8 +17,11 @@ def crawl():
     # handle needs
     result = fetch_page(params)
 
+    # print result
+
     # return needs
     return jsonify(result)
+    # return result["html"].decode('gbk')
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0',port=5010,debug=True)
+    app.run(host='0.0.0.0',port=5010,debug=False)

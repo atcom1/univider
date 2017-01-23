@@ -5,6 +5,8 @@ import urlparse
 
 from bs4 import BeautifulSoup
 
+import render
+
 
 def fetch_page(params):
 
@@ -32,8 +34,24 @@ def fetch_page(params):
         response = urllib2.urlopen(req,timeout=5)
         httpstatus = response.code
         httpcontenttype = response.info().getheader("Content-Type")
-        html = response.read()
+
+        if(params.has_key("ajax") and params["ajax"] == "true"):
+            if(params.has_key("ajaxTimeout")):
+                ajaxTimeout = params["ajaxTimeout"]
+            else:
+                ajaxTimeout = 8
+            if(params.has_key("ajaxLoadImage")):
+                ajaxLoadImage = params["ajaxLoadImage"]
+            else:
+                ajaxLoadImage = "false"
+            html = render.getDom(url,ajaxLoadImage,ajaxTimeout)
+        else:
+            html = response.read()
+            if('gbk' in html):
+                html = html.decode('gbk')
+
         # print html
+
         soup = BeautifulSoup(html)
         title = soup.title.string
         status = "OK"
