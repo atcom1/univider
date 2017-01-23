@@ -53,7 +53,10 @@ def fetch_page(params):
         # print html
 
         soup = BeautifulSoup(html)
-        title = soup.title.string
+        try:
+            title = soup.title.string
+        except Exception:
+            title = ""
         status = "OK"
 
     except Exception,e:
