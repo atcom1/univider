@@ -22,10 +22,10 @@ class Fetcher():
         cvalue = cacher.get(ckey)
 
         if(cvalue!= 'null' and cvalue!= None and cvalue!=''):
-            print 'from cache'
+            # print 'from cache'
             return cvalue
         else:
-            print 'from source'
+            # print 'from source'
             cvalue = self.fetch_page(params)
             cacher.set(ckey,cvalue)
             return cvalue
