@@ -3,8 +3,6 @@ import json
 
 from flask import Flask, request, jsonify
 
-from fetcher import fetch_page
-
 app = Flask(__name__)
 
 @app.route("/crawl", methods=['GET', 'POST'])
@@ -15,7 +13,9 @@ def crawl():
     params  = json.loads(data)
 
     # handle needs
-    result = fetch_page(params)
+    from univider.fetcher import Fetcher
+    fetcher = Fetcher()
+    result = fetcher.fetch_page(params)
 
     # print result
 

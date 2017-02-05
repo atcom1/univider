@@ -9,7 +9,12 @@ def redis_cluster():
     #                 {'host':'10.78.155.71','port':16340},
     #                 {'host':'10.78.155.72','port':16340},
     #                ]
-    redis_nodes =  [{'host':'master.hadoop','port':6379}
+    redis_nodes =  [{'host':'192.168.136.130','port':7000},
+                    {'host':'192.168.136.130','port':7001},
+                    {'host':'192.168.136.130','port':7002},
+                    {'host':'192.168.136.131','port':7000},
+                    {'host':'192.168.136.131','port':7001},
+                    {'host':'192.168.136.131','port':7002},
                    ]
     try:
         redisconn = StrictRedisCluster(startup_nodes=redis_nodes)
@@ -17,8 +22,8 @@ def redis_cluster():
         print "Connect Error!"
         sys.exit(1)
 
-    redisconn.set('name','admin')
-    redisconn.set('age',18)
+    # redisconn.set('name','admin',5)
+    # redisconn.set('age',18,5)
     print "name is: ", redisconn.get('name')
     print "age  is: ", redisconn.get('age')
 
