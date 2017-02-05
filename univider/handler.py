@@ -15,7 +15,7 @@ def crawl():
     # handle needs
     from univider.fetcher import Fetcher
     fetcher = Fetcher()
-    result = fetcher.fetch_page(params)
+    result = fetcher.fetch_page_with_cache(params)
 
     # print result
 

@@ -3,6 +3,14 @@ from rediscluster import StrictRedisCluster
 
 class Cacher:
 
+    # redis_nodes =  [{'host':'10.78.155.61','port':16340},
+    #                 {'host':'10.78.155.67','port':16340},
+    #                 {'host':'10.78.155.68','port':16340},
+    #                 {'host':'10.78.155.70','port':16340},
+    #                 {'host':'10.78.155.71','port':16340},
+    #                 {'host':'10.78.155.72','port':16340},
+    #                ]
+
     redis_nodes =  [{'host':'192.168.136.130','port':7000},
                     {'host':'192.168.136.130','port':7001},
                     {'host':'192.168.136.130','port':7002},

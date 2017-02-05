@@ -5,7 +5,30 @@ import urlparse
 
 from bs4 import BeautifulSoup
 
+from univider.cacher import Cacher
+from univider.encrypter import get_md5_value
+
+
 class Fetcher():
+
+    def fetch_page_with_cache(self,params):
+
+        params_c = params.copy()
+
+        del params_c['uuid']
+
+        ckey = get_md5_value(str(params_c))
+        cacher = Cacher()
+        cvalue = cacher.get(ckey)
+
+        if(cvalue!= 'null' and cvalue!= None and cvalue!=''):
+            print 'from cache'
+            return cvalue
+        else:
+            print 'from source'
+            cvalue = self.fetch_page(params)
+            cacher.set(ckey,cvalue)
+            return cvalue
 
     def fetch_page(self,params):
 
