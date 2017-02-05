@@ -1,4 +1,4 @@
-# smartproxy
+# univider
 yet another web spider interface
 
 ## installation
