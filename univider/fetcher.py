@@ -23,7 +23,7 @@ class Fetcher():
 
         if(cvalue!= 'null' and cvalue!= None and cvalue!=''):
             # print 'from cache'
-            return cvalue
+            return eval(cvalue)
         else:
             # print 'from source'
             cvalue = self.fetch_page(params)
