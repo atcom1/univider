@@ -8,6 +8,8 @@ from thrift.transport import TSocket
 from thrift.transport import THttpClient
 from thrift.protocol import TBinaryProtocol
 
+from univider.settings import hbase_host, hbase_port
+
 gen_py_path = os.path.abspath('gen-py')
 sys.path.append(gen_py_path)
 from hbase import THBaseService
@@ -18,8 +20,8 @@ class Storager:
     # create_namespace 'spider'
     # create 'spider:cplatform', {NAME => 'w', VERSIONS => 1, TTL => 2592000, BLOCKCACHE => true}
 
-    host = "master.hadoop"
-    port = 9090
+    host = hbase_host
+    port = hbase_port
     framed = False
 
     def save(self,key,url,title,content):
