@@ -28,6 +28,9 @@ class Fetcher():
             # print 'from source'
             cvalue = self.fetch_page(params)
             cacher.set(ckey,cvalue)
+            # from univider.subprocessor import Subprocessor
+            # subprocessor = Subprocessor()
+            # subprocessor.handle_result(cvalue)
             return cvalue
 
     def fetch_page(self,params):
