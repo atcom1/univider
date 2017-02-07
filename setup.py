@@ -27,7 +27,7 @@ setup(
     license="Apache License, Version 2.0",
     url=URL,
     packages=find_packages(),
-
+    include_package_data = True,
     entry_points={
         'console_scripts': [
             'univider=univider.handler:main'
