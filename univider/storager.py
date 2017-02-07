@@ -28,9 +28,9 @@ class Storager:
 
         socket = TSocket.TSocket(self.host, self.port)
         if self.framed:
-          transport = TTransport.TFramedTransport(socket)
+            transport = TTransport.TFramedTransport(socket)
         else:
-          transport = TTransport.TBufferedTransport(socket)
+            transport = TTransport.TBufferedTransport(socket)
         protocol = TBinaryProtocol.TBinaryProtocol(transport)
         client = THBaseService.Client(protocol)
 
@@ -52,9 +52,9 @@ class Storager:
 
         socket = TSocket.TSocket(self.host, self.port)
         if self.framed:
-          transport = TTransport.TFramedTransport(socket)
+            transport = TTransport.TFramedTransport(socket)
         else:
-          transport = TTransport.TBufferedTransport(socket)
+            transport = TTransport.TBufferedTransport(socket)
         protocol = TBinaryProtocol.TBinaryProtocol(transport)
         client = THBaseService.Client(protocol)
 

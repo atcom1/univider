@@ -12,26 +12,28 @@ from univider.encrypter import get_md5_value
 class Fetcher():
 
     def fetch_page_with_cache(self,params):
-
-        params_c = params.copy()
-
-        del params_c['uuid']
-
-        ckey = get_md5_value(str(params_c))
-        cacher = Cacher()
-        cvalue = cacher.get(ckey)
-
-        if(cvalue!= 'null' and cvalue!= None and cvalue!=''):
-            # print 'from cache'
-            return eval(cvalue)
+        if(params.has_key("iscache") and params["iscache"] == "false"):
+            iscache = False
         else:
-            # print 'from source'
-            cvalue = self.fetch_page(params)
+            iscache = True
+            params_c = params.copy()
+            del params_c['uuid']
+            ckey = get_md5_value(str(params_c))
+            cacher = Cacher()
+            cvalue = cacher.get(ckey)
+
+        if(iscache):
+            if(cvalue!= 'null' and cvalue!= None and cvalue!=''):
+                print 'from cache'
+                return eval(cvalue)
+        print 'from source'
+        cvalue = self.fetch_page(params)
+        if(iscache):
             cacher.set(ckey,cvalue)
             # from univider.subprocessor import Subprocessor
             # subprocessor = Subprocessor()
             # subprocessor.handle_result(cvalue)
-            return cvalue
+        return cvalue
 
     def fetch_page(self,params):
 
@@ -98,7 +100,7 @@ class Fetcher():
             print Exception,":",e
 
 
-        if(params.has_key("onlytitle") and ( params["onlytitle"] == "true" or params["onlytitle"] == True )):
+        if(params.has_key("onlytitle") and params["onlytitle"] == "true"):
             result = {
                 'uuid':uuid,
                 'status':status,

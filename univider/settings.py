@@ -2,9 +2,9 @@
 import socket
 
 if socket.gethostname() == 'EGG-PC':
-  PROFILE = 'dev'
+    PROFILE = 'dev'
 else:
-  PROFILE = 'prod'
+    PROFILE = 'prod'
 
 if PROFILE == 'dev':
     redis_nodes =  [{'host':'192.168.136.130','port':7000},
