@@ -1,4 +1,4 @@
-#coding=utf-8
+# -*- coding: utf-8 -*-
 from rediscluster import StrictRedisCluster
 
 from univider.settings import redis_nodes, redis_expires

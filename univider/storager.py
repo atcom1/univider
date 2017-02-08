@@ -1,4 +1,4 @@
-#coding=utf-8
+# -*- coding: utf-8 -*-
 
 import sys
 import os
@@ -10,7 +10,7 @@ from thrift.protocol import TBinaryProtocol
 
 from univider.settings import hbase_host, hbase_port
 
-gen_py_path = os.path.abspath('gen-py')
+gen_py_path = os.path.dirname(__file__) + '/gen-py'
 sys.path.append(gen_py_path)
 from hbase import THBaseService
 from hbase.ttypes import *
@@ -41,11 +41,21 @@ class Storager:
             put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="u",value=url)])
             client.put(table, put)
         if(title != None and title != ''  ):
-            put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="t",value=title)])
-            client.put(table, put)
+            try:
+                put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="t",value=title)])
+                client.put(table, put)
+            except UnicodeEncodeError,e:
+                put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="t",value=title.encode('utf8'))])
+                client.put(table, put)
+
         if(content != None and content != ''  ):
-            put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="c",value=content)])
-            client.put(table, put)
+            try:
+                put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="c",value=content)])
+                client.put(table, put)
+            except UnicodeEncodeError,e:
+                put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="c",value=content.encode('utf8'))])
+                client.put(table, put)
+
         # print "Putting:", put
 
         transport.close()

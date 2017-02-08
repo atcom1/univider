@@ -1,10 +1,5 @@
-#coding=utf-8
+# -*- coding: utf-8 -*-
 import threading
-
-import sys
-
-reload(sys)
-sys.setdefaultencoding( "utf-8" )
 
 class Subprocessor():
 
@@ -23,8 +18,10 @@ class Subprocessor():
     def store(self):
         from univider.storager import Storager
         storager = Storager()
-        # print self.content
-        # storager.save(self.key,self.url,self.title,self.content)
+        # print 'title : ' + self.title
+        # print 'content : ' + self.content
+        # enc =chardet.detect(self.content)
+        # print enc['encoding']
         storager.save(self.key,self.url,self.title,self.content)
         print "stored " + self.url
 

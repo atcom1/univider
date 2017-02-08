@@ -1,4 +1,4 @@
-#coding=utf-8
+# -*- coding: utf-8 -*-
 import socket
 import urllib2
 import urlparse
@@ -7,7 +7,6 @@ from bs4 import BeautifulSoup
 
 from univider.cacher import Cacher
 from univider.encrypter import get_md5_value
-
 
 class Fetcher():
 
@@ -29,11 +28,11 @@ class Fetcher():
 
         if(iscache):
             if(cvalue!= 'null' and cvalue!= None and cvalue!=''):
-                print 'from cache'
+                print 'got cache ' + params['url']
                 result = eval(cvalue)
                 self.persist(params,result)
                 return result
-        print 'from source'
+        print 'fetched source ' + params['url']
         result = self.fetch_page(params)
         if(iscache):
             cacher.set(ckey,result)
@@ -81,20 +80,23 @@ class Fetcher():
                 html = render.getDom(url,ajaxLoadImage,ajaxTimeout)
             else:
                 html = response.read()
-                if('gbk' in html):
+                if('GBK' in httpcontenttype or 'gbk' in httpcontenttype):
                     try:
                         html = html.decode('gbk')
-                    except:
-                        pass
+                    except Exception,e:
+                        print Exception,":",e
 
-            # print html
+            # print 'html : ' + html
 
             try:
-                soup = BeautifulSoup(html)
+                soup = BeautifulSoup(html,'lxml')
                 title = soup.title.string
-            except Exception:
+            except Exception,e:
+                print Exception,":",e
                 title = ""
             status = "OK"
+
+            # print 'title : ' + title
 
         except Exception,e:
             httpstatus = 400
