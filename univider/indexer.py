@@ -1,83 +1,86 @@
 # -*- coding: utf-8 -*-
+from elasticsearch import Elasticsearch, SerializationError
 
-import sys
-import os
+from univider.settings import es_host
 
-from thrift.transport import TTransport
-from thrift.transport import TSocket
-from thrift.transport import THttpClient
-from thrift.protocol import TBinaryProtocol
-
-from univider.settings import hbase_host, hbase_port
-
-gen_py_path = os.path.dirname(__file__) + '/gen-py'
-sys.path.append(gen_py_path)
-from hbase import THBaseService
-from hbase.ttypes import *
-
-class Storager:
+class Indexer:
 
     # create_namespace 'spider'
     # create 'spider:cplatform', {NAME => 'w', VERSIONS => 1, TTL => 2592000, BLOCKCACHE => true}
 
-    host = hbase_host
-    port = hbase_port
-    framed = False
+    host = es_host
+
+    index = "cplatform"
+    type = "website"
+
+    es = Elasticsearch(host,
+                   sniff_on_start=True,
+                   sniff_on_connection_fail=True,
+                   sniffer_timeout=60)
 
     def save(self,key,url,title,content):
 
-        socket = TSocket.TSocket(self.host, self.port)
-        if self.framed:
-            transport = TTransport.TFramedTransport(socket)
-        else:
-            transport = TTransport.TBufferedTransport(socket)
-        protocol = TBinaryProtocol.TBinaryProtocol(transport)
-        client = THBaseService.Client(protocol)
-
-        transport.open()
-
-        table = "spider:cplatform"
-        if(url != None and url != ''  ):
-            put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="u",value=url)])
-            client.put(table, put)
-        if(title != None and title != ''  ):
+        if(title != None and title != '' and content != None and content != '' ):
+            body = {
+                'url':url,
+                'title':title,
+                'content':content
+            }
+            self.es.index(self.index, self.type, body, key)
+        elif(title != None and title != ''  ):
+            body = {
+                'url':url,
+                'title':title
+            }
+            self.es.index(self.index, self.type, body, key)
+        elif(content != None and content != ''  ):
             try:
-                put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="t",value=title)])
-                client.put(table, put)
-            except UnicodeEncodeError,e:
-                put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="t",value=title.encode('utf8'))])
-                client.put(table, put)
-
-        if(content != None and content != ''  ):
-            try:
-                put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="c",value=content)])
-                client.put(table, put)
-            except UnicodeEncodeError,e:
-                put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="c",value=content.encode('utf8'))])
-                client.put(table, put)
-
-        # print "Putting:", put
-
-        transport.close()
-
-    def read(self,key):
-
-        socket = TSocket.TSocket(self.host, self.port)
-        if self.framed:
-            transport = TTransport.TFramedTransport(socket)
+                body = {
+                    'url':url,
+                    'content':content
+                }
+                self.es.index(self.index, self.type, body, key)
+            except SerializationError,e:
+                body = {
+                    'url':url,
+                    'content':content.decode('utf8')
+                }
+                self.es.index(self.index, self.type, body, key)
         else:
-            transport = TTransport.TBufferedTransport(socket)
-        protocol = TBinaryProtocol.TBinaryProtocol(transport)
-        client = THBaseService.Client(protocol)
+            body = {
+                'url':url,
+            }
+            self.es.index(self.index, self.type, body, key)
 
-        transport.open()
 
-        table = "spider:cplatform"
 
-        get = TGet(row=key)
-        print "Getting:", get
-        result = client.get(table, get)
+    def read(self,keyword):
 
-        print "Result:", result
+        body = {
+            "query":{
+                "bool":{
+                    "should":[
+                        {"match":{"url":keyword}},
+                        {"match":{"title":keyword}},
+                        {"match":{"content":keyword}},
+                    ]
+                }
+            }
+        }
 
-        transport.close()
+        result = self.es.search(self.index, self.type, body)
+
+        count = result["hits"]["total"]
+
+        print "keyword:" + keyword
+        print "count:" + str(count)
+
+        for row in result["hits"]["hits"]:
+            print row
+            # score = row["_score"]
+            # id = row["_id"]
+            # title = row["_source"]["title"]
+            # content = row["_source"]["content"]
+            # print " score:" + str(score) + " id:" + id + " title:" + title + " content:" + content
+
+        # print result["hits"]["hits"][0]["_source"]["news_content"]

@@ -22,7 +22,7 @@ install_requires = [
     'elasticsearch==2.4.1',
     'Flask>=0.10',
     'redis-py-cluster==1.3.3',
-    'thrift==0.9.3',
+    'thrift==0.10.0',
 ]
 
 setup(

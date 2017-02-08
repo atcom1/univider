@@ -18,14 +18,13 @@ class Subprocessor():
     def store(self):
         from univider.storager import Storager
         storager = Storager()
-        # print 'title : ' + self.title
-        # print 'content : ' + self.content
-        # enc =chardet.detect(self.content)
-        # print enc['encoding']
         storager.save(self.key,self.url,self.title,self.content)
         print "stored " + self.url
 
     def index(self):
+        from univider.indexer import Indexer
+        indexer = Indexer()
+        indexer.save(self.key,self.url,self.title,self.content)
         print "indexed " + self.url
 
     def persist(self):
