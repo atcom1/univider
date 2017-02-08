@@ -1,24 +1,37 @@
 #coding=utf-8
 import threading
-from time import sleep
 
+import sys
+
+reload(sys)
+sys.setdefaultencoding( "utf-8" )
 
 class Subprocessor():
 
-    def __init__(self,result):
-        self.result = result
+    def __init__(self,params,result):
+        self.key = params['uuid']
+        self.url = params['url']
+        if(result.has_key('title')):
+            self.title = result['title']
+        else:
+            self.title = None
+        if(result.has_key('html')):
+            self.content = result['html']
+        else:
+            self.content = None
 
     def store(self):
-        for i in range(100):
-            print "aaaaa"
-            sleep(1)
+        from univider.storager import Storager
+        storager = Storager()
+        # print self.content
+        # storager.save(self.key,self.url,self.title,self.content)
+        storager.save(self.key,self.url,self.title,self.content)
+        print "stored " + self.url
 
     def index(self):
-        for i in range(100):
-            print "bbbbb"
-            sleep(3)
+        print "indexed " + self.url
 
-    def handle_result(self):
+    def persist(self):
         threads = []
         t1 = threading.Thread(target=self.store)
         threads.append(t1)
@@ -28,6 +41,7 @@ class Subprocessor():
         for t in threads:
             t.setDaemon(True)
             t.start()
+        # t.join()
 
 
 

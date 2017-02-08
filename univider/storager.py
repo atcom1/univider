@@ -37,13 +37,15 @@ class Storager:
         transport.open()
 
         table = "spider:cplatform"
-
-        put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="u",value=url)])
-        client.put(table, put)
-        put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="t",value=title)])
-        client.put(table, put)
-        put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="c",value=content)])
-        client.put(table, put)
+        if(url != None and url != ''  ):
+            put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="u",value=url)])
+            client.put(table, put)
+        if(title != None and title != ''  ):
+            put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="t",value=title)])
+            client.put(table, put)
+        if(content != None and content != ''  ):
+            put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="c",value=content)])
+            client.put(table, put)
         # print "Putting:", put
 
         transport.close()

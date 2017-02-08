@@ -11,6 +11,11 @@ from univider.encrypter import get_md5_value
 
 class Fetcher():
 
+    def persist(self,params,result):
+        from univider.subprocessor import Subprocessor
+        subprocessor = Subprocessor(params,result)
+        subprocessor.persist()
+
     def fetch_page_with_cache(self,params):
         if(params.has_key("iscache") and params["iscache"] == "false"):
             iscache = False
@@ -25,15 +30,15 @@ class Fetcher():
         if(iscache):
             if(cvalue!= 'null' and cvalue!= None and cvalue!=''):
                 print 'from cache'
-                return eval(cvalue)
+                result = eval(cvalue)
+                self.persist(params,result)
+                return result
         print 'from source'
-        cvalue = self.fetch_page(params)
+        result = self.fetch_page(params)
         if(iscache):
-            cacher.set(ckey,cvalue)
-            # from univider.subprocessor import Subprocessor
-            # subprocessor = Subprocessor()
-            # subprocessor.handle_result(cvalue)
-        return cvalue
+            cacher.set(ckey,result)
+        self.persist(params,result)
+        return result
 
     def fetch_page(self,params):
 
