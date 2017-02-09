@@ -11,9 +11,12 @@ from univider.encrypter import get_md5_value
 class Fetcher():
 
     def persist(self,params,result):
-        from univider.subprocessor import Subprocessor
-        subprocessor = Subprocessor(params,result)
-        subprocessor.persist()
+        try:
+            from univider.subprocessor import Subprocessor
+            subprocessor = Subprocessor(params,result)
+            subprocessor.persist()
+        except Exception,e:
+            print Exception,":",e
 
     def fetch_page_with_cache(self,params):
         if(params.has_key("iscache") and params["iscache"] == "false"):
