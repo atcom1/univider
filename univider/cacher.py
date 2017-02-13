@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
+
 from rediscluster import StrictRedisCluster
 
+from univider.logger import Logger
 from univider.settings import redis_nodes, redis_expires
 
 
 class Cacher:
+
+    logger = Logger(__name__).getlogger()
 
     redisconn = StrictRedisCluster(startup_nodes=redis_nodes)
 
@@ -16,7 +20,7 @@ class Cacher:
             # print "name is: ", redisconn.get('name')
             # print "age  is: ", redisconn.get('age')
         except Exception,e:
-            print "Redis Error!"
+            self.logger.error("Redis Error!")
 
     def get(self,key):
         return self.redisconn.get(key)

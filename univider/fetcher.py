@@ -7,8 +7,12 @@ from bs4 import BeautifulSoup
 
 from univider.cacher import Cacher
 from univider.encrypter import get_md5_value
+from univider.logger import Logger
+
 
 class Fetcher():
+
+    logger = Logger(__name__).getlogger()
 
     def persist(self,params,result):
         try:
@@ -31,11 +35,11 @@ class Fetcher():
 
         if(iscache):
             if(cvalue!= 'null' and cvalue!= None and cvalue!=''):
-                print 'got cache ' + params['url']
+                self.logger.info('got cache ' + params['url'])
                 result = eval(cvalue)
                 self.persist(params,result)
                 return result
-        print 'fetched source ' + params['url']
+        self.logger.info('fetched source ' + params['url'])
         result = self.fetch_page(params)
         if(iscache):
             cacher.set(ckey,result)

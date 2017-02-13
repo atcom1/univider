@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 import threading
 
+from univider.logger import Logger
+
+
 class Subprocessor():
+
+    logger = Logger(__name__).getlogger()
 
     def __init__(self,params,result):
         self.key = params['uuid']
@@ -19,13 +24,13 @@ class Subprocessor():
         from univider.storager import Storager
         storager = Storager()
         storager.save(self.key,self.url,self.title,self.content)
-        print "stored " + self.url
+        self.logger.info("stored " + self.url)
 
     def index(self):
         from univider.indexer import Indexer
         indexer = Indexer()
         indexer.save(self.key,self.url,self.title,self.content)
-        print "indexed " + self.url
+        self.logger.info("indexed " + self.url)
 
     def persist(self):
         threads = []
