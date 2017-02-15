@@ -10,7 +10,7 @@ class Cacher:
 
     logger = Logger(__name__).getlogger()
 
-    redisconn = StrictRedisCluster(startup_nodes=redis_nodes)
+    redisconn = StrictRedisCluster(startup_nodes=redis_nodes,max_connections=10000)
 
     def set(self,key,value,expires = redis_expires):
         try:

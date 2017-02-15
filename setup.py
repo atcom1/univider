@@ -21,6 +21,7 @@ install_requires = [
     'beautifulsoup4==4.5.3',
     'elasticsearch==2.4.1',
     'Flask>=0.10',
+    'gevent>=1.2.1',
     'redis-py-cluster==1.3.3',
     'thrift==0.10.0',
 ]
