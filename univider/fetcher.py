@@ -3,22 +3,22 @@ import socket
 import urllib2
 import urlparse
 
-from bs4 import BeautifulSoup
-
-from univider.cacher import Cacher
-from univider.encrypter import get_md5_value
 from univider.logger import Logger
-
 
 class Fetcher():
 
     logger = Logger(__name__).getlogger()
 
     def persist(self,params,result):
+
         try:
-            from univider.subprocessor import Subprocessor
-            subprocessor = Subprocessor(params,result)
-            subprocessor.persist()
+            from univider.settings import persist
+            if(persist):
+                from univider.subprocessor import Subprocessor
+                subprocessor = Subprocessor(params,result)
+                subprocessor.persist()
+            else:
+                pass
         except Exception,e:
             print Exception,":",e
 
@@ -29,7 +29,9 @@ class Fetcher():
             iscache = True
             params_c = params.copy()
             del params_c['uuid']
+            from univider.encrypter import get_md5_value
             ckey = get_md5_value(str(params_c))
+            from univider.cacher import Cacher
             cacher = Cacher()
             cvalue = cacher.get(ckey)
 
@@ -37,7 +39,7 @@ class Fetcher():
             if(cvalue!= 'null' and cvalue!= None and cvalue!=''):
                 self.logger.info('got cache ' + params['url'])
                 result = eval(cvalue)
-                self.persist(params,result)
+                # self.persist(params,result)
                 return result
         self.logger.info('fetched source ' + params['url'])
         result = self.fetch_page(params)
@@ -96,6 +98,7 @@ class Fetcher():
             # print 'html : ' + html
 
             try:
+                from bs4 import BeautifulSoup
                 soup = BeautifulSoup(html,'lxml')
                 title = soup.title.string
             except Exception,e:
