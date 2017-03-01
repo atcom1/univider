@@ -8,11 +8,12 @@ from thrift.transport import TSocket
 from thrift.transport import THttpClient
 from thrift.protocol import TBinaryProtocol
 
-from univider.settings import hbase_host, hbase_port
+from univider.settings import hbase_host, hbase_port, accessid, accesskey
 
 gen_py_path = os.path.dirname(__file__) + '/gen-py'
 sys.path.append(gen_py_path)
-from hbase import THBaseService
+# from hbase import THBaseService
+from hbase import THBaseService4CMH
 from hbase.ttypes import *
 
 class Storager:
@@ -32,29 +33,30 @@ class Storager:
         else:
             transport = TTransport.TBufferedTransport(socket)
         protocol = TBinaryProtocol.TBinaryProtocol(transport)
-        client = THBaseService.Client(protocol)
+        # client = THBaseService.Client(protocol)
+        client = THBaseService4CMH.Client(protocol)
 
         transport.open()
 
         table = "spider:cplatform"
         if(url != None and url != ''  ):
             put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="u",value=url)])
-            client.put(table, put)
+            client.put(table, put, accessid, accesskey)
         if(title != None and title != ''  ):
             try:
                 put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="t",value=title)])
-                client.put(table, put)
+                client.put(table, put, accessid, accesskey)
             except UnicodeEncodeError,e:
                 put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="t",value=title.encode('utf8'))])
-                client.put(table, put)
+                client.put(table, put, accessid, accesskey)
 
         if(content != None and content != ''  ):
             try:
                 put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="c",value=content)])
-                client.put(table, put)
+                client.put(table, put, accessid, accesskey)
             except UnicodeEncodeError,e:
                 put = TPut(row=key, columnValues=[TColumnValue(family="w",qualifier="c",value=content.encode('utf8'))])
-                client.put(table, put)
+                client.put(table, put, accessid, accesskey)
 
         # print "Putting:", put
 
@@ -68,7 +70,8 @@ class Storager:
         else:
             transport = TTransport.TBufferedTransport(socket)
         protocol = TBinaryProtocol.TBinaryProtocol(transport)
-        client = THBaseService.Client(protocol)
+        # client = THBaseService.Client(protocol)
+        client = THBaseService4CMH.Client(protocol)
 
         transport.open()
 
@@ -76,7 +79,7 @@ class Storager:
 
         get = TGet(row=key)
         print "Getting:", get
-        result = client.get(table, get)
+        result = client.get(table, get, accessid, accesskey)
 
         print "Result:", result
 

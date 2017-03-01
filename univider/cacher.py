@@ -21,8 +21,12 @@ class Cacher:
             # print "age  is: ", redisconn.get('age')
         except Exception,e:
             self.logger.error("Redis Error!")
+        # finally:
+        #     self.redisconn.connection_pool.disconnect()
 
     def get(self,key):
-        return self.redisconn.get(key)
+        value = self.redisconn.get(key)
+        # self.redisconn.connection_pool.disconnect()
+        return value
 
 

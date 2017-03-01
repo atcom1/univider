@@ -18,6 +18,8 @@ if PROFILE == 'dev':
     persist = False
     hbase_host = 'master.hadoop'
     hbase_port = 9090
+    accessid = ''
+    accesskey = ''
     es_host = ["master.hadoop"]
 
 elif PROFILE == 'prod':
@@ -29,9 +31,11 @@ elif PROFILE == 'prod':
                     {'host':'10.78.155.72','port':16340},
                     ]
     redis_expires = 86400
-    persist = False
+    persist = True
     hbase_host = '10.78.138.74'
     hbase_port = 9090
+    accessid = '480092febea017febfe4'
+    accesskey = '3fe3bccd97e3c8cb9c5b57cffc74090671722641'
     es_host = ["10.78.138.53",
                "10.78.138.54",
                "10.78.138.55",

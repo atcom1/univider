@@ -10,7 +10,7 @@ def crawl():
 
     # parse needs
     data = request.get_data()
-    params  = json.loads(data)
+    params = json.loads(data)
 
     # handle needs
     from univider.fetcher import Fetcher
