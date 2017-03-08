@@ -3,12 +3,17 @@
 import sys
 import os
 
+import datetime
+
+from hdfs import HdfsError
 from thrift.transport import TTransport
 from thrift.transport import TSocket
 from thrift.transport import THttpClient
 from thrift.protocol import TBinaryProtocol
 
-from univider.settings import hbase_host, hbase_port, accessid, accesskey
+from univider.settings import hbase_host, hbase_port, accessid, accesskey, hdfs_dir, hdfs_user, hdfs_web
+
+from hdfs.client import InsecureClient
 
 gen_py_path = os.path.dirname(__file__) + '/gen-py'
 sys.path.append(gen_py_path)
@@ -21,13 +26,11 @@ class Storager:
     # create_namespace 'spider'
     # create 'spider:cplatform', {NAME => 'w', VERSIONS => 1, TTL => 2592000, BLOCKCACHE => true}
 
-    host = hbase_host
-    port = hbase_port
     framed = False
 
-    def save(self,key,url,title,content):
+    def save_to_hbase(self,key,url,title,content):
 
-        socket = TSocket.TSocket(self.host, self.port)
+        socket = TSocket.TSocket(hbase_host, hbase_port)
         if self.framed:
             transport = TTransport.TFramedTransport(socket)
         else:
@@ -62,9 +65,9 @@ class Storager:
 
         transport.close()
 
-    def read(self,key):
+    def read_from_hbase(self,key):
 
-        socket = TSocket.TSocket(self.host, self.port)
+        socket = TSocket.TSocket(hbase_host, hbase_port)
         if self.framed:
             transport = TTransport.TFramedTransport(socket)
         else:
@@ -84,3 +87,20 @@ class Storager:
         print "Result:", result
 
         transport.close()
+
+    def save_to_hdfs(self,key,url,title,content):
+        current_date = datetime.datetime.now().strftime("%Y%m%d")
+        hdfs_path = hdfs_dir + current_date
+        import sys
+        reload(sys)
+        sys.setdefaultencoding('utf-8')
+        data = "\n"+key+"\n"+url+"\n"
+        if(title != None and title != ''  ):
+            data = data + title+"\n"
+        if(content != None and content != ''  ):
+            data = data + content+"\n"
+        try:
+            client = InsecureClient(hdfs_web, user=hdfs_user)
+            client.write(hdfs_path=hdfs_path, data=data, append=True)
+        except HdfsError,e:
+            client.write(hdfs_path=hdfs_path, data=data)

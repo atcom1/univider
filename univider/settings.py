@@ -15,12 +15,15 @@ if PROFILE == 'dev':
                     {'host':'192.168.136.131','port':7002},
                     ]
     redis_expires = 30
-    persist = False
+    landing = ["hdfs"]
     hbase_host = 'master.hadoop'
     hbase_port = 9090
     accessid = ''
     accesskey = ''
     es_host = ["master.hadoop"]
+    hdfs_web = "http://master.hadoop:50070"
+    hdfs_dir = "/user/spider/cplatform/"
+    hdfs_user = "hadoop"
 
 elif PROFILE == 'prod':
     redis_nodes =  [{'host':'10.78.155.61','port':16340},
@@ -31,7 +34,8 @@ elif PROFILE == 'prod':
                     {'host':'10.78.155.72','port':16340},
                     ]
     redis_expires = 86400
-    persist = True
+    # persist = ["hbase","hdfs","es"]
+    landing = ["hdfs"]
     hbase_host = '10.78.138.74'
     hbase_port = 9090
     accessid = '480092febea017febfe4'
@@ -57,3 +61,6 @@ elif PROFILE == 'prod':
                "10.78.138.71",
                "10.78.138.72",
                ]
+    hdfs_web = "http://10.78.138.81:50070"
+    hdfs_dir = "/user/spider/cplatform/"
+    hdfs_user = "hadoop"

@@ -12,10 +12,10 @@ class Fetcher():
     def persist(self,params,result):
 
         try:
-            from univider.settings import persist
-            if(persist):
+            from univider.settings import landing
+            if(landing):
                 from univider.subprocessor import Subprocessor
-                subprocessor = Subprocessor(params,result)
+                subprocessor = Subprocessor(landing,params,result)
                 subprocessor.persist()
             else:
                 pass

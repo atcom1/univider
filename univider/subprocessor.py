@@ -8,7 +8,8 @@ class Subprocessor():
 
     logger = Logger(__name__).getlogger()
 
-    def __init__(self,params,result):
+    def __init__(self,landing,params,result):
+        self.landing = landing
         self.key = params['uuid']
         self.url = params['url']
         if(result.has_key('title')):
@@ -20,13 +21,19 @@ class Subprocessor():
         else:
             self.content = None
 
-    def store(self):
+    def store_to_hbase(self):
         from univider.storager import Storager
         storager = Storager()
-        storager.save(self.key,self.url,self.title,self.content)
-        self.logger.info("stored " + self.url)
+        storager.save_to_hbase(self.key,self.url,self.title,self.content)
+        self.logger.info("stored to hbase : " + self.url)
 
-    def index(self):
+    def store_to_hdfs(self):
+        from univider.storager import Storager
+        storager = Storager()
+        storager.save_to_hdfs(self.key,self.url,self.title,self.content)
+        self.logger.info("stored to hdfs : " + self.url)
+
+    def index_to_es(self):
         from univider.indexer import Indexer
         indexer = Indexer()
         indexer.save(self.key,self.url,self.title,self.content)
@@ -34,10 +41,15 @@ class Subprocessor():
 
     def persist(self):
         threads = []
-        t1 = threading.Thread(target=self.store)
-        threads.append(t1)
-        t2 = threading.Thread(target=self.index)
-        threads.append(t2)
+        if("es" in self.landing):
+            t1 = threading.Thread(target=self.index_to_es)
+            threads.append(t1)
+        if("hbase" in self.landing):
+            t2 = threading.Thread(target=self.store_to_hbase)
+            threads.append(t2)
+        if("hdfs" in self.landing):
+            t3 = threading.Thread(target=self.store_to_hdfs)
+            threads.append(t3)
 
         for t in threads:
             t.setDaemon(True)

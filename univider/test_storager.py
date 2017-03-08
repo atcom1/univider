@@ -3,20 +3,9 @@ from univider.storager import Storager
 
 storager = Storager()
 
-storager.save('aaaaa2fe-8d4a-4f23-bb66-ec2b5b8174f56','http://www.baidu.com','百度','啦啦啦啦啦啦这是内容')
+storager.save_to_hbase('aaaaa2fe-8d4a-4f23-bb66-ec2b5b8174f56','http://www.baidu.com','百度','啦啦啦啦啦啦这是内容')
 
-result =  storager.read('aaaaa2fe-8d4a-4f23-bb66-ec2b5b8174f56')
+result =  storager.read_from_hbase('aaaaa2fe-8d4a-4f23-bb66-ec2b5b8174f56')
 print result
-# result =  storager.read('bbbbb2fe-8d4a-4f23-bb66-ec2b5b8174f56')
-# print result
-# result =  storager.read('ccccc2fe-8d4a-4f23-bb66-ec2b5b8174f56')
-# print result
-# result =  storager.read('ddddd2fe-8d4a-4f23-bb66-ec2b5b8174f56')
-# print result
-# result =  storager.read('eeeee2fe-8d4a-4f23-bb66-ec2b5b8174f56')
-# print result
-# result =  storager.read('fffff2fe-8d4a-4f23-bb66-ec2b5b8174f56')
-# print result
-
 
 
