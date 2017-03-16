@@ -14,7 +14,7 @@ if PROFILE == 'dev':
                     {'host':'192.168.136.131','port':7001},
                     {'host':'192.168.136.131','port':7002},
                     ]
-    redis_expires = 30
+    cache_expires = 30
     # landing = ["hbase","hdfs","es"]
     landing = []
     hbase_host = 'master.hadoop'
@@ -34,7 +34,7 @@ elif PROFILE == 'prod':
                     {'host':'10.78.155.71','port':16340},
                     {'host':'10.78.155.72','port':16340},
                     ]
-    redis_expires = 86400
+    cache_expires = 86400
     # landing = ["hbase","hdfs","es"]
     landing = []
     hbase_host = '10.78.138.74'

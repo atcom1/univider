@@ -3,7 +3,7 @@ from univider.cacher import Cacher
 
 cacher = Cacher()
 
-# cacher.set('a','11111aaaaa')
+cacher.set('aaaaaaaaa','你好')
 
-print cacher.get('a')
+print cacher.get('aaaaaaaaa')
 

@@ -29,15 +29,15 @@ class Fetcher():
             iscache = True
 
         if(iscache):
-            # params_c = params.copy()
-            # del params_c['uuid']
+            params_c = params.copy()
+            del params_c['uuid']
             from univider.encrypter import get_md5_value
-            ckey = get_md5_value(params['url'])
+            ckey = get_md5_value(str(params_c))
             try:
                 from univider.cacher import Cacher
                 cacher = Cacher()
                 cvalue = cacher.get(ckey)
-                if(cvalue!= 'null' and cvalue!= None and cvalue!=''):
+                if(cvalue!= None and cvalue!=''):
                     self.logger.info('got cache ' + params['url'])
                     result = eval(cvalue)
                     # self.persist(params,result)
@@ -47,8 +47,11 @@ class Fetcher():
         result = self.fetch_page(params)
         self.logger.info('fetched source ' + params['url'])
         if(iscache):
-            cacher.set(ckey,result)
-            self.logger.info('cached source ' + params['url'])
+            try:
+                cacher.set(ckey,str(result))
+                self.logger.info('cached source ' + params['url'])
+            except Exception,e:
+                print Exception,":",e
         self.persist(params,result)
         return result
 
@@ -93,6 +96,13 @@ class Fetcher():
                 html = render.getDom(url,ajaxLoadImage,ajaxTimeout)
             else:
                 html = response.read()
+
+                gzipped = response.headers.get('Content-Encoding')
+
+                if gzipped:
+                    import zlib
+                    html = zlib.decompress(html, 16+zlib.MAX_WBITS)
+
                 if('GBK' in httpcontenttype or 'gbk' in httpcontenttype):
                     try:
                         html = html.decode('gbk')
