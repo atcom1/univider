@@ -27,24 +27,28 @@ class Fetcher():
             iscache = False
         else:
             iscache = True
-            params_c = params.copy()
-            del params_c['uuid']
-            from univider.encrypter import get_md5_value
-            ckey = get_md5_value(str(params_c))
-            from univider.cacher import Cacher
-            cacher = Cacher()
-            cvalue = cacher.get(ckey)
 
         if(iscache):
-            if(cvalue!= 'null' and cvalue!= None and cvalue!=''):
-                self.logger.info('got cache ' + params['url'])
-                result = eval(cvalue)
-                # self.persist(params,result)
-                return result
-        self.logger.info('fetched source ' + params['url'])
+            # params_c = params.copy()
+            # del params_c['uuid']
+            from univider.encrypter import get_md5_value
+            ckey = get_md5_value(params['url'])
+            try:
+                from univider.cacher import Cacher
+                cacher = Cacher()
+                cvalue = cacher.get(ckey)
+                if(cvalue!= 'null' and cvalue!= None and cvalue!=''):
+                    self.logger.info('got cache ' + params['url'])
+                    result = eval(cvalue)
+                    # self.persist(params,result)
+                    return result
+            except Exception,e:
+                print Exception,":",e
         result = self.fetch_page(params)
+        self.logger.info('fetched source ' + params['url'])
         if(iscache):
             cacher.set(ckey,result)
+            self.logger.info('cached source ' + params['url'])
         self.persist(params,result)
         return result
 
