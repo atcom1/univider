@@ -35,7 +35,7 @@ elif PROFILE == 'prod':
                     ]
     redis_expires = 86400
     # persist = ["hbase","hdfs","es"]
-    landing = ["hdfs"]
+    landing = []
     hbase_host = '10.78.138.74'
     hbase_port = 9090
     accessid = '480092febea017febfe4'
