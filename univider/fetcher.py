@@ -3,7 +3,11 @@ import socket
 import urllib2
 import urlparse
 
+from elasticsearch import Elasticsearch
+
 from univider.logger import Logger
+from univider.settings import es_host
+
 
 class Fetcher():
 
@@ -76,7 +80,59 @@ class Fetcher():
                 req = urllib2.Request(url=url, data=data, headers=headers)
             else:
                 # GET
-                req = urllib2.Request(url=url, headers=headers)
+                if url.startswith("http://mp.weixin.qq.com") or url.startswith("https://mp.weixin.qq.com"):
+                    es = Elasticsearch(es_host)
+                    index = "yuqing_index"
+                    doc_type = "article"
+                    url = url.replace("https","http")
+                    body = {
+                          "query": {
+                            "match_phrase": {
+                              "link": url
+                            }
+                          }
+                        }
+                    resp = es.search(index=index, doc_type=doc_type, body=body)
+                    if len(resp['hits']['hits'])>0:
+                        html = resp['hits']['hits'][0]['_source']['html']
+                        self.logger.info('get weixin cached source ' + url)
+                        try:
+                            from bs4 import BeautifulSoup
+                            soup = BeautifulSoup(html, 'lxml')
+                            title = soup.title.string
+                        except Exception, e:
+                            print Exception, ":", e
+                            title = ""
+                        status = "OK"
+
+                        httpstatus=200
+                        httpcontenttype="text/html; charset=UTF-8"
+
+                        if (params.has_key("onlytitle") and params["onlytitle"] == "true"):
+                            result = {
+                                'uuid': uuid,
+                                'status': status,
+                                'node': node,
+                                'httpstatus': httpstatus,
+                                'httpcontenttype': httpcontenttype,
+                                'title': title
+                            }
+                        else:
+                            result = {
+                                'uuid': uuid,
+                                'status': status,
+                                'node': node,
+                                'httpstatus': httpstatus,
+                                'httpcontenttype': httpcontenttype,
+                                'html': html,
+                            }
+
+                        return result
+
+                    else:
+                        req = urllib2.Request(url=url, headers=headers)
+                else:
+                    req = urllib2.Request(url=url, headers=headers)
 
             response = urllib2.urlopen(req,timeout=5)
             httpstatus = response.code
