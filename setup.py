@@ -19,7 +19,7 @@ VERSION = __import__(PACKAGE).__version__
 
 install_requires = [
     'beautifulsoup4==4.5.3',
-    'elasticsearch==2.4.1',
+    'elasticsearch==5.5.1',
     'Flask>=0.10',
     'gevent>=1.2.1',
     'hdfs==2.0.16',

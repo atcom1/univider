@@ -49,7 +49,6 @@ class Fetcher():
             except Exception,e:
                 print Exception,":",e
         result = self.fetch_page(params)
-        self.logger.info('fetched source ' + params['url'])
         if(iscache):
             try:
                 cacher.set(ckey,str(result))
@@ -81,6 +80,9 @@ class Fetcher():
             else:
                 # GET
                 if url.startswith("http://mp.weixin.qq.com") or url.startswith("https://mp.weixin.qq.com"):
+                    url = url.replace(u"%3D","=",10)
+                    if "chksm" in url:
+                        url = url[:url.index("&chksm")]
                     es = Elasticsearch(es_host)
                     index = "yuqing_index"
                     doc_type = "article"
@@ -126,7 +128,7 @@ class Fetcher():
                                 'httpcontenttype': httpcontenttype,
                                 'html': html,
                             }
-
+                        self.logger.info('fetched source ' + url)
                         return result
 
                     else:
@@ -206,4 +208,5 @@ class Fetcher():
                 'html':html,
             }
 
+        self.logger.info('fetched source ' + url)
         return result
