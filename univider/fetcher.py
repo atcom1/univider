@@ -1,12 +1,18 @@
 # -*- coding: utf-8 -*-
+import base64
+import random
 import socket
+import urllib
 import urllib2
 import urlparse
 
+import time
 from elasticsearch import Elasticsearch
 
+from univider.esutil import save_yuqing_article
 from univider.logger import Logger
 from univider.settings import es_host
+from pyquery import PyQuery as pyq
 
 
 class Fetcher():
@@ -59,7 +65,7 @@ class Fetcher():
         return result
 
     def fetch_page(self,params):
-
+        date=time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
         uuid = params["uuid"]
         node = socket.gethostname()
 
@@ -96,6 +102,7 @@ class Fetcher():
                         }
                     resp = es.search(index=index, doc_type=doc_type, body=body)
                     if len(resp['hits']['hits'])>0:
+                        print 'ES alreay exist'
                         html = resp['hits']['hits'][0]['_source']['html']
                         self.logger.info('get weixin cached source ' + url)
                         try:
@@ -132,7 +139,143 @@ class Fetcher():
                         return result
 
                     else:
-                        req = urllib2.Request(url=url, headers=headers)
+                        import sys
+                        reload(sys)
+                        sys.setdefaultencoding('utf-8')
+                        status = "OK"
+                        httpstatus = 200
+                        httpcontenttype = "text/html; charset=UTF-8"
+                        try:
+                            req = urllib2.Request(url=url, headers=headers)
+                            html = urllib2.urlopen(req, timeout=5).read()
+                            py_html = pyq(html)
+                            try:
+                                error_message = py_html('.global_error_msg').text()
+                                # print error_message
+                                if "内容已被发布者删除" in error_message:
+                                    result = {
+                                        'uuid': uuid,
+                                        'status': status,
+                                        'node': node,
+                                        'httpstatus': httpstatus,
+                                        'httpcontenttype': httpcontenttype,
+                                        'html': html,
+                                    }
+                                    return result
+                            except Exception, e:
+                                print e, '1'
+                            try:
+                                transfer_message = py_html('.weui-msg__title').text()
+                                # print transfer_message
+                                if "公众号已迁移" in transfer_message:
+                                    result = {
+                                        'uuid': uuid,
+                                        'status': status,
+                                        'node': node,
+                                        'httpstatus': httpstatus,
+                                        'httpcontenttype': httpcontenttype,
+                                        'html': html,
+                                    }
+                                    return result
+                            except Exception, e:
+                                print e, '2'
+                            try:
+                                shield_message = py_html('.text_area>p.tips').text()
+                                # print shield_message
+                                if "无法查看" in shield_message:
+                                    result = {
+                                        'uuid': uuid,
+                                        'status': status,
+                                        'node': node,
+                                        'httpstatus': httpstatus,
+                                        'httpcontenttype': httpcontenttype,
+                                        'html': html,
+                                    }
+                                    return result
+                            except Exception, e:
+                                print e, '3'
+                            try:
+                                share_message = py_html('.text_area>p.tips').text()
+                                # print share_message
+                                if "分享" in share_message:
+                                    result = {
+                                        'uuid': uuid,
+                                        'status': status,
+                                        'node': node,
+                                        'httpstatus': httpstatus,
+                                        'httpcontenttype': httpcontenttype,
+                                        'html': html,
+                                    }
+                                    return result
+                            except Exception, e:
+                                print e, '4'
+                            title = py_html('#img-content>h2').text()
+                            # print title
+                            copyright_logo = py_html('#copyright_logo').text()
+                            # print copyright_logo
+                            post_date = py_html('#post-date').text()
+                            # print post_date
+                            post_author = py_html('#meta_content>em').text()
+                            if post_author == post_date:
+                                post_author = 'null'
+                            else:
+                                post_author = post_author.split(' ')[-1]
+                            # print post_author
+                            weixin_mp_name = py_html('#post-user').text()
+                            # print weixin_mp_name
+                            weixin_mp_code = py_html('#meta_content>div>div>p:nth-child(3)>span').text()
+                            # print weixin_mp_code
+                            weixin_mp_desc = py_html('#meta_content>div>div>p:nth-child(4)>span').text()
+                            content = py_html('#js_content').text()
+                            if len(weixin_mp_name) == len(title) == len(weixin_mp_code) == len(post_date) == 0:
+                                result = {
+                                    'uuid': uuid,
+                                    'status': status,
+                                    'node': node,
+                                    'httpstatus': httpstatus,
+                                    'httpcontenttype': httpcontenttype,
+                                    'html': html,
+                                }
+                                return result
+                            pic_targets = []
+                            images = []
+                            pic_content = py_html('#js_content')
+                            for each in pic_content('img').items():
+                                data_src = each.attr('data-src')
+                                data_type = each.attr('data-type')
+                                item = {}
+                                item['data_src'] = data_src
+                                item['data_type'] = data_type
+                                # print src
+                                pic_targets.append(item)
+                            try:
+                                pic_target = random.choice(pic_targets)
+                                pic_html = base64.b64encode(urllib.urlopen(pic_target['data_src']).read())
+                                pic_src = "data:image/%s;base64," % (pic_target['data_type']) + pic_html
+                                images.append(pic_src)
+                            except:
+                                pass
+                            try:
+                                save_yuqing_article(title=title, mp_name=weixin_mp_name, content=content,
+                                                    post_date=post_date, link=url,
+                                                    html=html, images=images, mp_code=weixin_mp_code,
+                                                    mp_desc=weixin_mp_desc,
+                                                    copyright_logo=copyright_logo, article_author=post_author,
+                                                    crawl_time=date)
+                                result = {
+                                    'uuid': uuid,
+                                    'status': status,
+                                    'node': node,
+                                    'httpstatus': httpstatus,
+                                    'httpcontenttype': httpcontenttype,
+                                    'html': html,
+                                }
+                                return result
+                            except Exception, e:
+                                print e, '5'
+                                return
+                        except Exception, e:
+                            print e, '6'
                 else:
                     req = urllib2.Request(url=url, headers=headers)
 
