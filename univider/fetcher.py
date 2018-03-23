@@ -237,28 +237,10 @@ class Fetcher():
                                     'html': html,
                                 }
                                 return result
-                            pic_targets = []
-                            images = []
-                            pic_content = py_html('#js_content')
-                            for each in pic_content('img').items():
-                                data_src = each.attr('data-src')
-                                data_type = each.attr('data-type')
-                                item = {}
-                                item['data_src'] = data_src
-                                item['data_type'] = data_type
-                                # print src
-                                pic_targets.append(item)
-                            try:
-                                pic_target = random.choice(pic_targets)
-                                pic_html = base64.b64encode(urllib.urlopen(pic_target['data_src']).read())
-                                pic_src = "data:image/%s;base64," % (pic_target['data_type']) + pic_html
-                                images.append(pic_src)
-                            except:
-                                pass
                             try:
                                 save_yuqing_article(title=title, mp_name=weixin_mp_name, content=content,
                                                     post_date=post_date, link=url,
-                                                    html=html, images=images, mp_code=weixin_mp_code,
+                                                    html=html, mp_code=weixin_mp_code,
                                                     mp_desc=weixin_mp_desc,
                                                     copyright_logo=copyright_logo, article_author=post_author,
                                                     crawl_time=date)
