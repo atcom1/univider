@@ -5,6 +5,8 @@ import socket
 import urllib
 import urllib2
 import urlparse
+import cx_Oracle
+import requests
 
 import time
 from elasticsearch import Elasticsearch
@@ -15,10 +17,10 @@ from univider.settings import es_host
 from pyquery import PyQuery as pyq
 
 
+
 class Fetcher():
 
     logger = Logger(__name__).getlogger()
-
     def persist(self,params,result):
 
         try:
@@ -145,9 +147,18 @@ class Fetcher():
                         status = "OK"
                         httpstatus = 200
                         httpcontenttype = "text/html; charset=UTF-8"
+                        db_conn = cx_Oracle.connect('spd_dm/spd_dm_1Q#@pdb_spider')
+                        oreader = db_conn.cursor()
+                        get_proxy="select proxy from (select * from spd_dm.ip_pool order by data_date desc) a where rownum<5"
+                        oreader.execute(get_proxy)
+                        result=oreader.fetchall()
+                        oreader.close()
+                        db_conn.close()
+                        proxy1 = random.choice(result)[0]
+                        #print proxy
                         try:
-                            req = urllib2.Request(url=url, headers=headers)
-                            html = urllib2.urlopen(req, timeout=5).read()
+                            r = requests.get(url, proxies={"http": proxy1})
+                            html = r.text
                             py_html = pyq(html)
                             try:
                                 error_message = py_html('.global_error_msg').text()
@@ -213,19 +224,17 @@ class Fetcher():
                             # print title
                             copyright_logo = py_html('#copyright_logo').text()
                             # print copyright_logo
-                            post_date = py_html('#post-date').text()
+                            post_date = py_html('#publish_time').text()
                             # print post_date
-                            post_author = py_html('#meta_content>em').text()
-                            if post_author == post_date:
+                            post_author = py_html('#meta_content>p').text()
+                            if post_author == '':
                                 post_author = 'null'
-                            else:
-                                post_author = post_author.split(' ')[-1]
                             # print post_author
-                            weixin_mp_name = py_html('#post-user').text()
+                            weixin_mp_name = py_html('#meta_content>span>a').text()
                             # print weixin_mp_name
-                            weixin_mp_code = py_html('#meta_content>div>div>p:nth-child(3)>span').text()
+                            weixin_mp_code = py_html('#js_profile_qrcode > div > p > .profile_meta_value').text().split(' ')[0]
                             # print weixin_mp_code
-                            weixin_mp_desc = py_html('#meta_content>div>div>p:nth-child(4)>span').text()
+                            weixin_mp_desc = py_html('#js_profile_qrcode > div > p > .profile_meta_value').text().split(' ')[1]
                             content = py_html('#js_content').text()
                             if len(weixin_mp_name) == len(title) == len(weixin_mp_code) == len(post_date) == 0:
                                 result = {
