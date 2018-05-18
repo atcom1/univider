@@ -149,16 +149,26 @@ class Fetcher():
                         httpcontenttype = "text/html; charset=UTF-8"
                         db_conn = cx_Oracle.connect('spd_dm/spd_dm_1Q#@pdb_spider')
                         oreader = db_conn.cursor()
-                        get_proxy="select proxy from (select * from spd_dm.ip_pool order by data_date desc) a where rownum<5"
-                        oreader.execute(get_proxy)
-                        result=oreader.fetchall()
+                        get_status = "select status from ip_pool_proxy"
+                        oreader.execute(get_status)
+                        status_result = oreader.fetchone()
                         oreader.close()
                         db_conn.close()
-                        proxy1 = random.choice(result)[0]
-                        #print proxy
                         try:
-                            r = requests.get(url, proxies={"http": proxy1})
-                            html = r.text
+                            if status_result[0] == 'False':
+                                req = urllib2.Request(url=url, headers=headers)
+                                html = urllib2.urlopen(req, timeout=5).read()
+                            else:
+                                db_conn = cx_Oracle.connect('spd_dm/spd_dm_1Q#@pdb_spider')
+                                oreader = db_conn.cursor()
+                                get_proxy = "select proxy from (select * from spd_dm.ip_pool order by data_date desc) a where rownum<5"
+                                oreader.execute(get_proxy)
+                                result = oreader.fetchall()
+                                oreader.close()
+                                db_conn.close()
+                                proxy1 = random.choice(result)[0]
+                                r = requests.get(url, proxies={"http": proxy1})
+                                html = r.text
                             py_html = pyq(html)
                             try:
                                 error_message = py_html('.global_error_msg').text()
