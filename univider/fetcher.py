@@ -248,7 +248,7 @@ class Fetcher():
                                     return result
                             except Exception, e:
                                 print e, '4'
-                            title = py_html('#img-content>h2').text().split('}')[2].strip()
+                            title = py_html('#img-content>h2').text().split('("')[2].split('")')[0].strip()
                             # print title
                             copyright_logo = py_html('#copyright_logo').text().split('：')[0]
                             # print copyright_logo
