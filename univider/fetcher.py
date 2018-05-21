@@ -2,6 +2,7 @@
 import base64
 import random
 import socket
+import re
 import urllib
 import urllib2
 import urlparse
@@ -169,23 +170,23 @@ class Fetcher():
                                 oreader.close()
                                 db_conn.close()
                                 proxy1 = random.choice(result)[0]
-                                proxy = Proxy(
-                                    {
-                                        'proxyType': ProxyType.MANUAL,
-                                        'httpProxy': proxy1  # 代理ip和端口
-                                    }
-                                )
-                                desired_capabilities = webdriver.DesiredCapabilities.PHANTOMJS.copy()
-                                # 把代理ip加入到技能中
-                                proxy.add_to_capabilities(desired_capabilities)
-                                driver = webdriver.PhantomJS(executable_path="/home/spd/app/phantomjs/phantomjs-2.1.1-linux-x86_64/bin/phantomjs",desired_capabilities=desired_capabilities)
-                                driver.get(url)
-                                driver.find_element_by_css_selector("#meta_content > em").click()
-                                html = driver.page_source
-                                driver.close()
-                                driver.quit()
-                                #r = requests.get(url, proxies={"http": proxy1})
-                                #html = r.text
+                                #proxy = Proxy(
+                                #    {
+                                #        'proxyType': ProxyType.MANUAL,
+                                #        'httpProxy': proxy1  # 代理ip和端口
+                                #    }
+                                #)
+                                #desired_capabilities = webdriver.DesiredCapabilities.PHANTOMJS.copy()
+                                ## 把代理ip加入到技能中
+                                #proxy.add_to_capabilities(desired_capabilities)
+                                #driver = webdriver.PhantomJS(executable_path="/home/spd/app/phantomjs/phantomjs-2.1.1-linux-x86_64/bin/phantomjs",desired_capabilities=desired_capabilities)
+                                #driver.get(url)
+                                #driver.find_element_by_css_selector("#meta_content > em").click()
+                                #html = driver.page_source
+                                #driver.close()
+                                #driver.quit()
+                                r = requests.get(url, proxies={"http": proxy1})
+                                html = r.text
                             py_html = pyq(html)
                             try:
                                 error_message = py_html('.global_error_msg').text()
@@ -251,7 +252,7 @@ class Fetcher():
                             # print title
                             copyright_logo = py_html('#copyright_logo').text().split('：')[0]
                             # print copyright_logo
-                            post_date = py_html('#publish_time').text()
+                            post_date = re.findall(r'var publish_time = "(.*?)"', str(py_html))[0]
                             # print post_date
                             if '-' not in post_date:
                                 result = {
