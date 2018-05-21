@@ -7,7 +7,9 @@ import urllib2
 import urlparse
 import cx_Oracle
 import requests
-
+from selenium import webdriver
+from selenium.webdriver.common.proxy import Proxy
+from selenium.webdriver.common.proxy import ProxyType
 import time
 from elasticsearch import Elasticsearch
 
@@ -167,8 +169,23 @@ class Fetcher():
                                 oreader.close()
                                 db_conn.close()
                                 proxy1 = random.choice(result)[0]
-                                r = requests.get(url, proxies={"http": proxy1})
-                                html = r.text
+                                proxy = Proxy(
+                                    {
+                                        'proxyType': ProxyType.MANUAL,
+                                        'httpProxy': proxy1  # 代理ip和端口
+                                    }
+                                )
+                                desired_capabilities = webdriver.DesiredCapabilities.PHANTOMJS.copy()
+                                # 把代理ip加入到技能中
+                                proxy.add_to_capabilities(desired_capabilities)
+                                driver = webdriver.PhantomJS(executable_path="/home/spd/app/phantomjs/phantomjs-2.1.1-linux-x86_64/bin/phantomjs",desired_capabilities=desired_capabilities)
+                                driver.get(url)
+                                driver.find_element_by_css_selector("#meta_content > em").click()
+                                html = driver.page_source
+                                driver.close()
+                                driver.quit()
+                                #r = requests.get(url, proxies={"http": proxy1})
+                                #html = r.text
                             py_html = pyq(html)
                             try:
                                 error_message = py_html('.global_error_msg').text()
@@ -230,21 +247,35 @@ class Fetcher():
                                     return result
                             except Exception, e:
                                 print e, '4'
-                            title = py_html('#img-content>h2').text()
+                            title = py_html('#img-content>h2').text().split('}')[2].strip()
                             # print title
-                            copyright_logo = py_html('#copyright_logo').text()
+                            copyright_logo = py_html('#copyright_logo').text().split('：')[0]
                             # print copyright_logo
                             post_date = py_html('#publish_time').text()
                             # print post_date
-                            post_author = py_html('#meta_content>p').text()
+                            if '-' not in post_date:
+                                result = {
+                                    'uuid': uuid,
+                                    'status': status,
+                                    'node': node,
+                                    'httpstatus': httpstatus,
+                                    'httpcontenttype': httpcontenttype,
+                                    'html': html,
+                                }
+                                return result
+                            if copyright_logo == '':
+                                post_author = py_html(
+                                    '#meta_content > span.rich_media_meta.rich_media_meta_text').text()
+                            else:
+                                post_author = py_html('#meta_content > span:nth-child(2)').text()
                             if post_author == '':
                                 post_author = 'null'
-                            # print post_author
+
                             weixin_mp_name = py_html('#meta_content>span>a').text()
                             # print weixin_mp_name
-                            weixin_mp_code = py_html('#js_profile_qrcode > div > p > .profile_meta_value').text().split(' ')[0]
+                            weixin_mp_code = py_html('#js_profile_qrcode > div > p:nth-child(3) > span').text()
                             # print weixin_mp_code
-                            weixin_mp_desc = py_html('#js_profile_qrcode > div > p > .profile_meta_value').text().split(' ')[1]
+                            weixin_mp_desc = py_html('#js_profile_qrcode > div > p:nth-child(4) > span').text()
                             content = py_html('#js_content').text()
                             if len(weixin_mp_name) == len(title) == len(weixin_mp_code) == len(post_date) == 0:
                                 result = {

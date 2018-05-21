@@ -12,9 +12,9 @@ import univider
 PACKAGE = "univider"
 NAME = "univider"
 DESCRIPTION = "yet another web spider interface"
-AUTHOR = "taoyang"
-AUTHOR_EMAIL = "ty@puton.info"
-URL = "http://puton.info"
+AUTHOR = "taoyang,JavieYe"
+AUTHOR_EMAIL = "ty@puton.net"
+URL = "http://puton.net"
 VERSION = __import__(PACKAGE).__version__
 
 install_requires = [
