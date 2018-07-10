@@ -164,7 +164,9 @@ class Fetcher():
                             else:
                                 db_conn = cx_Oracle.connect('spd_dm/spd_dm_1Q#@pdb_spider')
                                 oreader = db_conn.cursor()
-                                get_proxy = "select proxy from (select * from spd_dm.ip_pool order by data_date desc) a where rownum<5"
+                                #get_proxy = "select proxy from (select * from spd_dm.ip_pool order by data_date desc) a where rownum<5"
+                                get_proxy = "select proxy from spd_dm.ip_pool_v where rownum <10"
+                                #select * from spd_dm.ip_pool_v where rownum <10
                                 oreader.execute(get_proxy)
                                 result = oreader.fetchall()
                                 oreader.close()
@@ -185,8 +187,11 @@ class Fetcher():
                                 #html = driver.page_source
                                 #driver.close()
                                 #driver.quit()
-                                r = requests.get(url, proxies={"http": proxy1})
-                                html = r.text
+                                #r = requests.get(url, proxies={"http": proxy1})
+                                #html = r.text
+                                proxy_handler = urllib2.ProxyHandler({"http": "%s" % proxy1, "https": "%s" % proxy1})
+                                opener = urllib2.build_opener(proxy_handler)
+                                html = opener.open(url, timeout=10).read()
                             py_html = pyq(html)
                             try:
                                 error_message = py_html('.global_error_msg').text()
@@ -219,7 +224,7 @@ class Fetcher():
                             except Exception, e:
                                 print e, '2'
                             try:
-                                shield_message = py_html('.text_area>p.tips').text()
+                                shield_message = py_html('.text_area>p').text()
                                 # print shield_message
                                 if "无法查看" in shield_message:
                                     result = {
@@ -248,11 +253,11 @@ class Fetcher():
                                     return result
                             except Exception, e:
                                 print e, '4'
-                            title = py_html('#img-content>h2').text().split('("')[2].split('")')[0].strip()
+                            title = py_html('#img-content>h2').text()
                             # print title
                             copyright_logo = py_html('#copyright_logo').text().split('：')[0]
                             # print copyright_logo
-                            post_date = re.findall(r'var publish_time = "(.*?)"', str(py_html))[0]
+                            post_date = re.findall(r'var publish_time = "(.*?)"', str(html))[0]
                             # print post_date
                             if '-' not in post_date:
                                 result = {
@@ -265,8 +270,7 @@ class Fetcher():
                                 }
                                 return result
                             if copyright_logo == '':
-                                post_author = py_html(
-                                    '#meta_content > span.rich_media_meta.rich_media_meta_text').text()
+                                post_author = py_html('#meta_content > span.rich_media_meta.rich_media_meta_text').text()
                             else:
                                 post_author = py_html('#meta_content > span:nth-child(2)').text()
                             if post_author == '':
