@@ -35,7 +35,7 @@ class Fetcher():
             else:
                 pass
         except Exception,e:
-            print Exception,":",e
+            print Exception,params["user"] + ":",e
 
     def fetch_page_with_cache(self,params):
         if(params.has_key("iscache") and params["iscache"] == "false"):
@@ -58,14 +58,14 @@ class Fetcher():
                     # self.persist(params,result)
                     return result
             except Exception,e:
-                print Exception,":",e
+                print Exception,params["user"] + ":",e
         result = self.fetch_page(params)
         if(iscache):
             try:
                 cacher.set(ckey,str(result))
-                self.logger.info('cached source ' + params['url'])
+                self.logger.info(params["user"] + 'cached source ' + params['url'])
             except Exception,e:
-                print Exception,":",e
+                print Exception,params["user"] + ":",e
         self.persist(params,result)
         return result
 
@@ -109,13 +109,13 @@ class Fetcher():
                     if len(resp['hits']['hits'])>0:
                         print 'ES alreay exist'
                         html = resp['hits']['hits'][0]['_source']['html']
-                        self.logger.info('get weixin cached source ' + url)
+                        self.logger.info(params["user"] + 'get weixin cached source ' + url)
                         try:
                             from bs4 import BeautifulSoup
                             soup = BeautifulSoup(html, 'lxml')
                             title = soup.title.string
                         except Exception, e:
-                            print Exception, ":", e
+                            print Exception, params["user"] + ":", e
                             title = ""
                         status = "OK"
 
@@ -140,7 +140,7 @@ class Fetcher():
                                 'httpcontenttype': httpcontenttype,
                                 'html': html,
                             }
-                        self.logger.info('fetched source ' + url)
+                        self.logger.info(params["user"] + 'fetched source ' + url)
                         return result
 
                     else:
@@ -207,7 +207,7 @@ class Fetcher():
                                     }
                                     return result
                             except Exception, e:
-                                print e, '1'
+                                print e, params["user"] + '1'
                             try:
                                 transfer_message = py_html('.weui-msg__title').text()
                                 # print transfer_message
@@ -222,7 +222,7 @@ class Fetcher():
                                     }
                                     return result
                             except Exception, e:
-                                print e, '2'
+                                print e, params["user"] + '2'
                             try:
                                 shield_message = py_html('.text_area>p').text()
                                 # print shield_message
@@ -237,7 +237,7 @@ class Fetcher():
                                     }
                                     return result
                             except Exception, e:
-                                print e, '3'
+                                print e, params["user"] + '3'
                             try:
                                 share_message = py_html('.text_area>p.tips').text()
                                 # print share_message
@@ -252,7 +252,7 @@ class Fetcher():
                                     }
                                     return result
                             except Exception, e:
-                                print e, '4'
+                                print e, params["user"] + '4'
                             title = py_html('#img-content>h2').text()
                             # print title
                             copyright_logo = py_html('#copyright_logo').text().split('：')[0]
@@ -309,10 +309,10 @@ class Fetcher():
                                 }
                                 return result
                             except Exception, e:
-                                print e, '5'
+                                print e, params["user"] + '5'
                                 return
                         except Exception, e:
-                            print e, '6'
+                            print e, params["user"] + '6'
                 else:
                     req = urllib2.Request(url=url, headers=headers)
 
@@ -345,7 +345,7 @@ class Fetcher():
                     try:
                         html = html.decode('gbk')
                     except Exception,e:
-                        print Exception,":",e
+                        print Exception,params["user"] + ":",e
 
             # print 'html : ' + html
 
@@ -354,7 +354,7 @@ class Fetcher():
                 soup = BeautifulSoup(html,'lxml')
                 title = soup.title.string
             except Exception,e:
-                print Exception,":",e
+                print Exception,params["user"] + ":",e
                 title = ""
             status = "OK"
 
@@ -366,7 +366,7 @@ class Fetcher():
             title = ""
             html = ""
             status = str(Exception)+" : "+str(e)
-            print Exception,":",e
+            print Exception,params["user"] + ":",e
 
 
         if(params.has_key("onlytitle") and params["onlytitle"] == "true"):
@@ -388,5 +388,5 @@ class Fetcher():
                 'html':html,
             }
 
-        self.logger.info('fetched source ' + url)
+        self.logger.info(params["user"] + 'fetched source ' + url)
         return result
