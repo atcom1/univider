@@ -3,6 +3,8 @@ import json
 
 from flask import Flask, request, jsonify
 
+from univider.settings import app_user
+
 app = Flask(__name__)
 
 @app.route("/crawl", methods=['GET', 'POST'])
@@ -12,12 +14,17 @@ def crawl():
     data = request.get_data()
     params = json.loads(data)
 
-    # handle needs
-    from univider.fetcher import Fetcher
-    fetcher = Fetcher()
-    result = fetcher.fetch_page_with_cache(params)
-
-    # print result
+    # authentication
+    if (params.has_key("user") and params.has_key("secret") and params["secret"] == app_user.get(params["user"])):
+        # handle needs
+        from univider.fetcher import Fetcher
+        fetcher = Fetcher()
+        result = fetcher.fetch_page_with_cache(params)
+    else:
+        result = {
+            'status': 'error',
+            'description': 'Authentication failed.'
+        }
 
     # return needs
     return jsonify(result)

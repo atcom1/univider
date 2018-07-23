@@ -26,6 +26,10 @@ if PROFILE == 'dev':
     hdfs_web = "http://master.hadoop:50070"
     hdfs_dir = "/user/spider/cplatform/"
     hdfs_user = "hadoop"
+    app_user = {
+        'user1':'pwd1',
+        'user2':'pwd2'
+    }
 
 elif PROFILE == 'prod':
     redis_nodes =  [{'host':'10.78.155.61','port':16340},
@@ -69,3 +73,7 @@ elif PROFILE == 'prod':
     hdfs_web = "http://10.78.138.81:50070"
     hdfs_dir = "/user/spider/cplatform/"
     hdfs_user = "hadoop"
+    app_user = {
+        'cplatform':'9gw5gXTw',
+        'operation_robot':'yjIgAfzF'
+    }
