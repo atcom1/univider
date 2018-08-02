@@ -2,18 +2,19 @@
 import json
 
 from flask import Flask, request, jsonify
-
+import socket
 from univider.settings import app_user
+from univider.logger import Logger
 
 app = Flask(__name__)
 
 @app.route("/crawl", methods=['GET', 'POST'])
 def crawl():
-
+    logger = Logger(__name__).getlogger()
     # parse needs
     data = request.get_data()
     params = json.loads(data)
-
+    node = socket.gethostname()
     # authentication
     if (params.has_key("user") and params.has_key("secret") and params["secret"] == app_user.get(params["user"])):
         # handle needs
@@ -21,8 +22,13 @@ def crawl():
         fetcher = Fetcher()
         result = fetcher.fetch_page_with_cache(params)
     else:
+        if (params.has_key("user")):
+            logger.info(params["user"] + ' Authentication failed ' )
+        else:
+            logger.info('Unknown user Authentication failed ')
         result = {
             'status': 'error',
+            'node' : node,
             'description': 'Authentication failed.'
         }
 

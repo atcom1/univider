@@ -388,5 +388,5 @@ class Fetcher():
                 'html':html,
             }
 
-        self.logger.info(params["user"] + 'fetched source ' + url)
+        self.logger.info(params["user"] + ' fetched source ' + url + status )
         return result
