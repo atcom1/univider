@@ -7,10 +7,10 @@ from univider.settings import app_user
 from univider.logger import Logger
 
 app = Flask(__name__)
+logger = Logger(__name__).getlogger()
 
 @app.route("/crawl", methods=['GET', 'POST'])
 def crawl():
-    logger = Logger(__name__).getlogger()
     # parse needs
     data = request.get_data()
     params = json.loads(data)
@@ -25,7 +25,7 @@ def crawl():
         if (params.has_key("user")):
             logger.info(params["user"] + ' Authentication failed ' )
         else:
-            logger.info('Unknown user Authentication failed ')
+            logger.info('Unknown user Authentication failed '+str(params))
         result = {
             'status': 'error',
             'node' : node,
