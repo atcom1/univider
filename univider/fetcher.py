@@ -259,6 +259,9 @@ class Fetcher():
                             # print copyright_logo
                             post_date = re.findall(r'var publish_time = "(.*?)"', str(html))[0]
                             # print post_date
+                            msg_cdn_url = re.findall(r'var msg_cdn_url = "(.*?)"', str(html))[0]
+                            #print msg_cdn_url
+                            msg_cdn_id = re.findall(r'mmbiz_jpg/(.*)/', msg_cdn_url)[0]
                             if '-' not in post_date:
                                 result = {
                                     'uuid': uuid,
@@ -270,7 +273,7 @@ class Fetcher():
                                 }
                                 return result
                             if copyright_logo == '':
-                                post_author = py_html('#meta_content > span.rich_media_meta.rich_media_meta_text').text()
+                                post_author = py_html('#meta_content > span.rich_media_meta.rich_media_meta_text >#js_author_name').text()
                             else:
                                 post_author = py_html('#meta_content > span:nth-child(2)').text()
                             if post_author == '':
@@ -297,7 +300,7 @@ class Fetcher():
                                                     post_date=post_date, link=url,
                                                     html=html, mp_code=weixin_mp_code,
                                                     mp_desc=weixin_mp_desc,
-                                                    copyright_logo=copyright_logo, article_author=post_author,
+                                                    copyright_logo=copyright_logo, article_author=post_author,msg_cdn_id = msg_cdn_id,
                                                     crawl_time=date)
                                 result = {
                                     'uuid': uuid,
@@ -388,5 +391,5 @@ class Fetcher():
                 'html':html,
             }
 
-        self.logger.info(params["user"] + ' fetched source ' + url + status )
+        self.logger.info(params["user"] + ' fetched source '  + str(httpstatus) )
         return result
