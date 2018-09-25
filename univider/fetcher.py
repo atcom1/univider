@@ -300,7 +300,7 @@ class Fetcher():
                                                     post_date=post_date, link=url,
                                                     html=html, mp_code=weixin_mp_code,
                                                     mp_desc=weixin_mp_desc,
-                                                    copyright_logo=copyright_logo, article_author=post_author,msg_cdn_id = msg_cdn_id,
+                                                    copyright_logo=copyright_logo, article_author=post_author,msg_cdn_id = msg_cdn_id,url=url,
                                                     crawl_time=date)
                                 result = {
                                     'uuid': uuid,

@@ -10,7 +10,7 @@ def md5(str):
     m.update(str)
     return m.hexdigest()
 
-def save_yuqing_article(title="", mp_name="", content="", post_date="", link="", html="", mp_code="", mp_desc="", copyright_logo="", article_author="", crawl_time="",msg_cdn_id=''):
+def save_yuqing_article(title="", mp_name="", content="", post_date="", link="", html="", mp_code="", mp_desc="", copyright_logo="", article_author="", crawl_time="",msg_cdn_id='',url=''):
 
     data = {}
     data['title'] = title
@@ -24,6 +24,7 @@ def save_yuqing_article(title="", mp_name="", content="", post_date="", link="",
     data['copyright_logo'] = copyright_logo
     data['article_author'] = article_author
     data['msg_cdn_id'] = msg_cdn_id
+    data['url'] = url
     data['crawl_time'] = crawl_time
 
     index = "yuqing_index"
@@ -43,6 +44,7 @@ if __name__ == '__main__':
         , content="content"
         , post_date="2015-12-31"
         , link="http://www.baidu.com/xxxxx"
+        , url = "http://www.baidu.com/xxxxx"
         , html="html"
         , mp_code="haha"
         , mp_desc="mp_desc"
