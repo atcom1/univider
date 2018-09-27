@@ -261,7 +261,7 @@ class Fetcher():
                             # print post_date
                             msg_cdn_url = re.findall(r'var msg_cdn_url = "(.*?)"', str(html))[0]
                             #print msg_cdn_url
-                            msg_cdn_id = re.findall(r'mmbiz_jpg/(.*)/', msg_cdn_url)[0]
+                            msg_cdn_id = msg_cdn_url.split('/')[4]
                             if '-' not in post_date:
                                 result = {
                                     'uuid': uuid,
