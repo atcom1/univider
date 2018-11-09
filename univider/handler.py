@@ -36,6 +36,26 @@ def crawl():
     return jsonify(result)
     # return result["html"].decode('gbk')
 
+@app.route('/get_ip_list', methods=['POST','GET'])
+def get_ip_list():
+    import cx_Oracle
+    results = []
+    db_conn = cx_Oracle.connect('spd_dm/spd_dm_1Q#@PDB_SPIDER')
+    oreader = db_conn.cursor()
+    sql = "select * from ip_pool_all"
+    #print sql
+    oreader.execute(sql)
+    result = oreader.fetchall()
+    oreader.close()
+    db_conn.close()
+    for each in result:
+        row = {}
+        row['ip'] = each[0]
+        row['time'] = each[1]
+        results.append(row)
+    return jsonify(results)
+
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0',port=5010,debug=False)
 

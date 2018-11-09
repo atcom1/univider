@@ -52,5 +52,6 @@ if __name__ == '__main__':
         , copyright_logo="copyright_logo"
         , article_author="article_author"
         , msg_cdn_id = "msg_cdn_id"
+        , hd_head_img = "hd_head_img"
         , crawl_time="2017-12-31 12:31:21"
     )
