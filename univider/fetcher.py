@@ -267,6 +267,11 @@ class Fetcher():
                                 hd_head_img = ''
                             else:
                                 hd_head_img = hd_head_img[0].replace('\r\n', '').replace('\n', '')
+                            user_name = re.findall(r'var user_name = "(.*?)"', str(html))
+                            if len(user_name) == 0:
+                                user_name = ''
+                            else:
+                                user_name = user_name[0]
                             if '-' not in post_date:
                                 result = {
                                     'uuid': uuid,
@@ -305,7 +310,7 @@ class Fetcher():
                                                     post_date=post_date, link=url,
                                                     html=html, mp_code=weixin_mp_code,
                                                     mp_desc=weixin_mp_desc,
-                                                    copyright_logo=copyright_logo, article_author=post_author,msg_cdn_id = msg_cdn_id,hd_head_img=hd_head_img,url=url,
+                                                    copyright_logo=copyright_logo, article_author=post_author,msg_cdn_id = msg_cdn_id,hd_head_img=hd_head_img,url=url,user_name=user_name,
                                                     crawl_time=date)
                                 result = {
                                     'uuid': uuid,
