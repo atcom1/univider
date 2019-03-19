@@ -8,13 +8,14 @@ import urllib2
 import urlparse
 import cx_Oracle
 import requests
+import json
 from selenium import webdriver
 from selenium.webdriver.common.proxy import Proxy
 from selenium.webdriver.common.proxy import ProxyType
 import time
 from elasticsearch import Elasticsearch
 
-from univider.esutil import save_yuqing_article
+from univider.esutil import save_yuqing_article,save_qtt_content,save_qtt_comment
 from univider.logger import Logger
 from univider.settings import es_host
 from pyquery import PyQuery as pyq
@@ -326,6 +327,169 @@ class Fetcher():
                                 return
                         except Exception, e:
                             print e, params["user"] + '6'
+                elif url.startswith("http://html2.qktoutiao.com") or url.startswith("http://html3.qktoutiao.com"):
+                    #self.logger.info(str(params["url"]) + '###start###')
+                    headers = {
+                        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1',
+                    }
+                    def get_content(py_html, url, content_id):
+                        #self.logger.info(str(params["url"]) + '###contentstart###')
+                        html = py_html.html()
+                        title = py_html('div.article > h1').text()
+                        if title == '':  # 视频
+                            article = py_html('body > script:nth-child(1)').text()
+                            if article:
+                                try:
+                                    article = json.loads(article, strict=False)
+                                    content_type = article['video']['type']
+                                    title = article['title']
+                                    post_time = article['createTime']
+                                    author_id = article['authorid']
+                                    nickname = article['nickname']
+                                    content = ''
+                                    # is_origin,1原创,0非原创,-1视频
+                                    is_origin = '-1'
+                                except Exception as e:
+                                    return 0
+                            else:
+                                return 0
+                        else:
+                            content_type = re.search('type:(.*?),', html)
+                            content_type = content_type.group(1) if content_type else ''
+                            info = py_html('div.info').text().split(' ')
+                            try:
+                                post_time = info[0] + ' ' + info[1]
+                            except Exception as e:
+                                post_time = ''
+                            content = py_html('div.content').text()
+                            is_origin = re.search('isOrigin:([0-1]),', html)
+                            is_origin = is_origin.group(1) if is_origin else '0'
+                            author_id = re.search('authorid:\'([0-9]*)\',', html)
+                            author_id = author_id.group(1) if author_id else ''
+                            nickname = re.search('nickname:\'(.*?)\',', html)
+                            nickname = nickname.group(1) if nickname else ''
+
+                        crawl_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+                        # 调用内部接口获取分类
+                        zhuti = fenlei(title)
+                        # 获取评论,返回json
+                        comment_json = get_comment(url, content_id, crawl_time)
+                        # 储存文章
+                        try:
+                            save_qtt_content(content_id=content_id,
+                                             content_type=content_type,
+                                             title=title.replace('\n', ''),
+                                             zhuti=zhuti,
+                                             uri=url,
+                                             post_time=post_time,
+                                             author_id=author_id,
+                                             nickname=nickname,
+                                             is_origin=is_origin,
+                                             content=content,
+                                             comment_json=comment_json,
+                                             html=html,
+                                             crawl_time=crawl_time)
+                        except Exception as e:
+                            self.logger.info(str(params["url"]) + 'Error save_qtt_content ' + str(e))
+
+
+                    def get_comment(url, content_id, crawl_time):
+                        #self.logger.info(str(params["url"]) + '###commentstart###')
+                        v = re.search('&v=(.*?)[^0-9]', url)
+                        v = v.group(1) if v else '0'
+                        time_stamp = int(round(time.time() * 1000))
+                        api_url = 'http://api.1sapp.com/comment/hotList?token=&dtu=200&xhi=200&version=' + v + '&os=android&tk=&distinct_id=&deviceCode=&content_id=' + content_id + '&_=' + str(time_stamp)
+                        js = '{}'
+                        try:
+                            response = requests.get(api_url, headers=headers)
+                            js = response.json()
+                        except Exception as e:
+                            return js
+                        status = js.get('code')
+                        if status == 0:
+                            items = js.get('data')
+                            if items:
+                                for item in items:
+                                    nickname = item['nickname']
+                                    comment_id = item['comment_id']
+                                    comment = item['comment']
+                                    post_time = item['create_time']
+                                    like_num = int(item['like_num'])
+                                    try:
+                                        save_qtt_comment(
+                                            content_id=content_id,
+                                            nickname=nickname,
+                                            comment_id=comment_id,
+                                            comment=comment,
+                                            post_time=post_time,
+                                            like_num=like_num,
+                                            crawl_time=crawl_time
+                                        )
+                                    except Exception as e:
+                                        self.logger.info(str(params["url"]) + ' Error save_qtt_comment' + ' ' + str(e))
+                                return str(js)
+                        else:
+                            return str(js)
+
+                    def fenlei(title):
+                        #self.logger.info(str(params["url"]) + '###fenleitstart###')
+                        title = str(title).replace('\"', '').replace(':', '').replace(',', '').replace(';', '').replace('-', '').replace('=', '')
+                        fenlei_url = "http://nlp_textclass.zj.chinamobile.com:50340/service"
+                        headers = {"appId": "qtt_nlp", "token": "", "requestId": "20190220140000",
+                                   "requestTime": "2019-02-20 14:00:00"}
+                        post_body = '{"serviceName":"nlp_wbfl","requestParms":{"msg":"' + title + '"}}'.encode(
+                            encoding='utf_8')
+                        response = requests.post(fenlei_url, data=post_body, headers=headers)
+                        zhuti = ''
+                        try:
+                            data = json.loads(response.text, encoding='utf-8')
+                            result = data['respInfo']['response'][0]
+                        except Exception as e:
+                            return zhuti
+                        for i in result:
+                            zhuti = zhuti + ' ' + (i.encode('latin-1').decode('unicode_escape'))
+
+                        return zhuti
+
+
+                    def crawl(content_id, url):
+                        #self.logger.info(str(params["url"]) + '###crawlstart###')
+                        try:
+                            r = requests.get(url, headers=headers)
+                            #self.logger.info(str(params["url"]) + '###crawl 1###')
+                            content = r.content.decode('utf-8')
+                        except Exception as e:
+                            self.logger.info(str(params["url"]) + ' ' + str(e))
+                        if content.startswith('<!DOCTYPE html>'):
+                            #self.logger.info(str(params["url"]) + '###crawl 3###')
+                            py_html = pyq(content)
+                            #self.logger.info(str(params["url"]) + '###crawl 4###')
+                            get_content(py_html, url, content_id)
+
+
+                    content_id = re.search('[0-9]{2}/([0-9]*)\.html', url)
+                    if content_id:
+                        content_id = content_id.group(1)
+                        es = Elasticsearch(es_host)
+                        index = "qtt_content"
+                        doc_type = "qtt_content_type"
+                        body = {
+                            "query": {
+                                "match_phrase": {
+                                    "content_id": content_id
+                                }
+                            }
+                        }
+                        resp = es.search(index=index, doc_type=doc_type, body=body)
+                        if len(resp['hits']['hits']) > 0:
+                            print 'ES alreay exist'
+                            html = resp['hits']['hits'][0]['_source']['html']
+                            self.logger.info(params["user"] + 'get qtt cached source ' + url)
+                        else:
+                            crawl(content_id, url)
+                            #self.logger.info(str(params["url"]) + '###end###')
+                    else:
+                        self.logger.info(str(params["url"]) + '###页面不存在###')
                 else:
                     req = urllib2.Request(url=url, headers=headers)
 
@@ -401,5 +565,5 @@ class Fetcher():
                 'html':html,
             }
 
-        self.logger.info(params["user"] + ' fetched source '  + str(httpstatus) )
+        self.logger.info(params["user"] + ' fetched source '  + str(params["url"]) +  str(httpstatus) )
         return result

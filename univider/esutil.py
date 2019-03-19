@@ -39,6 +39,73 @@ def save_yuqing_article(title="", mp_name="", content="", post_date="", link="",
 
 
 
+
+
+
+def save_user(bill_no='',start_time='',end_time='',content_id='',uri='',lat='',lon='',crawl_time=''):
+    data_user = {}
+    data_user['bill_no'] = bill_no
+    data_user['start_time'] = start_time
+    data_user['end_time'] = end_time
+    data_user['content_id'] = content_id
+    data_user['uri'] = uri
+    data_user['lat'] = lat
+    data_user['lon'] = lon
+    data_user['crawl_time'] = crawl_time
+
+    index = "qtt_user"
+    doc_type = "qtt_user_type"
+    body = json.dumps(data_user, ensure_ascii=False)
+    id = md5(bill_no+content_id+start_time)
+    # print body
+
+    es.index(index=index, doc_type=doc_type, body=body, id=id)
+
+
+def save_qtt_content(content_id='',content_type='',title='',zhuti='',uri='',post_time='',author_id='',nickname='',is_origin='',content='',comment_json='',html='',crawl_time=''):
+    data_content = {}
+    data_content['content_id'] = content_id
+    data_content['content_type'] = content_type
+    data_content['title'] = title
+    data_content['zhuti'] = zhuti
+    data_content['uri'] = uri
+    data_content['post_time'] = post_time
+    data_content['author_id'] = author_id
+    data_content['nickname'] = nickname
+    data_content['is_origin'] = is_origin
+    data_content['content'] = content
+    data_content['comment_json'] = comment_json
+    data_content['html'] = html
+    data_content['crawl_time'] = crawl_time
+
+    index = "qtt_content"
+    doc_type = "qtt_content_type"
+    body = json.dumps(data_content, ensure_ascii=False)
+    id = md5(content_id)
+    # print body
+
+    es.index(index=index, doc_type=doc_type, body=body, id=id)
+
+
+def save_qtt_comment(content_id='',nickname='',comment_id='',comment='',post_time='',like_num='',crawl_time=''):
+    data_comment = {}
+    data_comment['content_id'] = content_id
+    data_comment['nickname'] = nickname
+    data_comment['comment_id'] = comment_id
+    data_comment['comment'] = comment
+    data_comment['post_time'] = post_time
+    data_comment['like_num'] = like_num
+    data_comment['crawl_time'] = crawl_time
+
+    index = "qtt_comment"
+    doc_type = "qtt_comment_type"
+    body = json.dumps(data_comment, ensure_ascii=False)
+    id = md5(comment_id)
+    # print body
+
+    es.index(index=index, doc_type=doc_type, body=body, id=id)
+
+
 if __name__ == '__main__':
     save_yuqing_article(
         title="title1"
@@ -56,4 +123,40 @@ if __name__ == '__main__':
         , hd_head_img = "hd_head_img"
         , user_name="user_name"
         , crawl_time="2017-12-31 12:31:21"
+    )
+    # 趣头条文章
+    save_qtt_content(
+        content_id='',  # 文章id
+        title='',  # 标题
+        zhuti='',  # 主题分类
+        uri='',  # uri
+        post_time='',  # 发布时间
+        author_id='',  # 发布作者id
+        nickname='',  # 发布作者
+        is_origin='',  # 是否原创
+        content='',  # 文章内容
+        comment_json='',  # 评论(json格式)
+        html='',  # 网页源码
+        crawl_time=''  # 爬取时间
+    )
+    # 趣头条文章评论
+    save_qtt_comment(
+        content_id='',  # 文章id
+        nickname='',  # 评论者昵称
+        comment_id='',  # 评论id
+        comment='',  # 评论内容
+        post_time='',  # 评论时间
+        like_num='',  # 评论点赞数
+        crawl_time=''  # 爬取时间
+    )
+    # 用户信息
+    save_user(
+        bill_no='',  # 号码
+        start_time='',
+        end_time='',
+        content_id='',  # 文章id
+        uri='',  # uri
+        lat='',  # 经纬度
+        lon='',  # 经纬度
+        crawl_time=''  # 爬取时间
     )
